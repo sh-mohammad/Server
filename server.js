@@ -3,6 +3,7 @@ var shortid = require('shortid');
 
 var Rooms = [];
 var Playrer_in_Room = [];
+var thisroom;
 console.log("server started");
 var Player_Counter = 0;
 io.on('connection', function(socket)
@@ -23,6 +24,7 @@ io.on('connection', function(socket)
 		//else if data.name not exist do create room
 		else{
 			socket.join(data.name);
+			thisroom = data.name;
 			console.log("roome is created with name : " + JSON.stringify(data.name));
 			Rooms.push(data.name);
 			socket.emit("spawn_hoster" ,{room : data.name, id:thisclaintId});
@@ -51,18 +53,22 @@ io.on('connection', function(socket)
 			}
 			else {
 				socket.join(data.name);
-				socket.in(data.name).emit("spawn_joiner", {room: data.name, id: thisclaintId});
-				//socket.in(data.name).emit("requestposition", {room : data.name});
+				thisroom = data.name;
+				socket.to(data.name).emit("spawn_joiner", {room: data.name, id: thisclaintId});
+
 				console.log("the claint with " + thisclaintId + " joined to the " + data.name);
 				number_of_room = (++Playrer_in_Room.find(findroomname).number);
 				Playrer_in_Room.find(findroomname).id.push(thisclaintId);
 				console.log("number of player in " + data.name + " is " + number_of_room);
 				Playrer_in_Room.find(findroomname).id.forEach(function(playerId){
+
 					if (thisclaintId == playerId) {
 							return;
 					}
+					console.log("hi");
 					socket.emit("otherspawn", {id: playerId, room:data.name});
 				});
+				socket.to(data.name).emit("requestposition", {room : data.name});
 
 			}
 		}
@@ -73,12 +79,22 @@ io.on('connection', function(socket)
 
 
 	});
-	///socket.on("updateposition", function(data){
-	///	console.log("update position ", data);
-	////	data.id = thisclaintId;
-	//	socket.in(data.room).emit("updateposition", data);
+	socket.on("updateposition", function(data){
+		data.id = thisclaintId;
+		data.room = thisroom;
+		console.log("update position ", data);
 
-	//});
+		socket.to(thisroom).emit("updatap", data);
+
+	});
+
+	socket.on("player move", function(data){
+		console.log("Player moved wiht id " + thisclaintId  + "and in room " + thisroom);
+		data.id = thisclaintId;
+		data.room	= thisroom;
+		socket.to(thisroom).emit("move", data);
+
+	});
 
 
 });
