@@ -1,14 +1,12 @@
 var io = require('socket.io')(process.env.PORT || 3000);
 var shortid = require('shortid');
-
 var Rooms = [];
 var Playrer_in_Room = [];
-var thisroom;
 console.log("server started");
 var Player_Counter = 0;
 io.on('connection', function(socket)
 {
-
+	var thisroom;
 
 	var thisclaintId = shortid.generate();
 	console.log('clienttt connected with Id :', thisclaintId);
@@ -94,6 +92,12 @@ io.on('connection', function(socket)
 		data.room	= thisroom;
 		socket.to(thisroom).emit("move", data);
 
+	});
+	socket.on("player rotate", function(data){
+		console.log("Player rotate wiht id " + thisclaintId  + "and in room " + thisroom);
+		data.id = thisclaintId;
+		data.room = thisroom;
+		socket.to(thisroom).emit("rotate", data);
 	});
 
 
