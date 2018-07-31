@@ -119,6 +119,33 @@ Playrer_in_Room.forEach(function(room){
 		data.room = thisroom;
 		socket.to(thisroom).emit("rotate", data);
 	});
+	socket.on("disconnect", function(){
+		console.log("client with " + thisclaintId + "id disconnect");
+		function findroomname(room) {
+		    return thisroom == room.key;
+		}
+		if (thisroom != null) {
+			console.log(thisroom);
+			if (Playrer_in_Room.find(findroomname).number >= 2) {
 
+					Playrer_in_Room.find(findroomname).number--;
+					var index = Playrer_in_Room.find(findroomname).id.indexOf(thisclaintId);
+					Playrer_in_Room.find(findroomname).id.splice(index, 1);
+					socket.leave(thisroom);
+					socket.to(thisroom).emit("client_disconnect", {id : thisclaintId});
+			}
+			else {
+				console.log("delete room " + thisroom);
+				var index = Rooms.indexOf(thisroom);
+				Rooms.splice(index, 1);
+				Playrer_in_Room = Playrer_in_Room.filter( el => el.key !== thisroom );
+				socket.leave(thisroom);
+				socket.to(thisroom).emit("client_disconnect", {id : thisclaintId});
+			//	socket.delete(thisroom);
+			}
+
+		}
+
+	});
 
 });
