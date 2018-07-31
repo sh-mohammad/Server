@@ -6,6 +6,12 @@ console.log("server started");
 var Player_Counter = 0;
 io.on('connection', function(socket)
 {
+Playrer_in_Room.forEach(function(room){
+	socket.emit("listrooms", {name_room: room.key, status: room.status, number_player_in_room:room.number, number_room: Rooms.length});
+});
+
+
+
 	var thisroom;
 
 	var thisclaintId = shortid.generate();
@@ -29,6 +35,8 @@ io.on('connection', function(socket)
 			Playrer_in_Room.push({
 				key: data.name,
 				number: 1,
+				status: data.Statuse,
+				passwordroom: data.Password_Romm,
 				id : [thisclaintId]
 			});
 		}
@@ -45,11 +53,23 @@ io.on('connection', function(socket)
 		//if  exist this data.name do spawn joiner
 
 		if (Rooms.find(checkexist)) {
-			var number_of_room = Playrer_in_Room.find(findroomname).number;
+			var room = Playrer_in_Room.find(findroomname)
+			var number_of_room = room.number;
 			if (number_of_room >= 4) {
 				socket.emit("room_is_full", {id : thisclaintId});
 			}
+
+
 			else {
+				console.log("status is " + room.status);
+				if (room.status == "True") {
+					console.log(data.name + "is Private");
+					if (room.passwordroom != data.password) {
+						console.log("room password is" + room.passwordroom + "data password is " + data.password);
+						socket.emit("password_errore", {id: thisclaintId});
+						return;
+					}
+				}
 				socket.join(data.name);
 				thisroom = data.name;
 				socket.to(data.name).emit("spawn_joiner", {room: data.name, id: thisclaintId});
