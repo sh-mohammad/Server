@@ -147,5 +147,10 @@ Playrer_in_Room.forEach(function(room){
 		}
 
 	});
+	socket.on("Refresh_room", function(){
+		Playrer_in_Room.forEach(function(room){
+			socket.emit("listrooms", {name_room: room.key, status: room.status, number_player_in_room:room.number, number_room: Rooms.length});
+		});
+	});
 
 });
