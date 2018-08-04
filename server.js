@@ -6,9 +6,7 @@ console.log("server started");
 var Player_Counter = 0;
 io.on('connection', function(socket)
 {
-Playrer_in_Room.forEach(function(room){
-	socket.emit("listrooms", {name_room: room.key, status: room.status, number_player_in_room:room.number, number_room: Rooms.length});
-});
+
 
 
 
@@ -70,22 +68,19 @@ Playrer_in_Room.forEach(function(room){
 						return;
 					}
 				}
+
 				socket.join(data.name);
+
 				thisroom = data.name;
+				socket.emit("Go_To_Game");
+
 				socket.to(data.name).emit("spawn_joiner", {room: data.name, id: thisclaintId});
 
 				console.log("the claint with " + thisclaintId + " joined to the " + data.name);
 				number_of_room = (++Playrer_in_Room.find(findroomname).number);
 				Playrer_in_Room.find(findroomname).id.push(thisclaintId);
 				console.log("number of player in " + data.name + " is " + number_of_room);
-				Playrer_in_Room.find(findroomname).id.forEach(function(playerId){
 
-					if (thisclaintId == playerId) {
-							return;
-					}
-					console.log("hi");
-					socket.emit("otherspawn", {id: playerId, room:data.name});
-				});
 				socket.to(data.name).emit("requestposition", {room : data.name});
 
 			}
@@ -150,6 +145,20 @@ Playrer_in_Room.forEach(function(room){
 	socket.on("Refresh_room", function(){
 		Playrer_in_Room.forEach(function(room){
 			socket.emit("listrooms", {name_room: room.key, status: room.status, number_player_in_room:room.number, number_room: Rooms.length});
+		});
+
+	});
+	socket.on("OnGameScene", function(){
+		function findroomname(room) {
+				return thisroom == room.key;
+		}
+		Playrer_in_Room.find(findroomname).id.forEach(function(playerId){
+
+			if (thisclaintId == playerId) {
+					return;
+			}
+			console.log("hi frome " + playerId + "to " + thisclaintId);
+			socket.emit("otherspawner", {id:playerId, room:thisroom});
 		});
 	});
 
