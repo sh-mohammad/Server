@@ -161,5 +161,8 @@ io.on('connection', function(socket)
 			socket.emit("otherspawner", {id:playerId, room:thisroom});
 		});
 	});
+	socket.on("Fire", function(){
+		socket.to(thisroom).emit("OnFire", {id:thisclaintId});
+	});
 
 });
